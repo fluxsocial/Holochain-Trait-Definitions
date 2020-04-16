@@ -172,7 +172,3 @@ trait InterDNALink {
 }
 
 ```
-
-<style>
-    .ui-infobar, #doc.markdown-body { max-width: 1100px; }
-</style>
