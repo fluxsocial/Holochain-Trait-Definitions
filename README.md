@@ -1,4 +1,4 @@
-# Junto Holochain Traits - Extended & Commented
+# Junto Holochain Traits
 The following paragraphs describe several Holochain DNA traits *(not Rust traits - Rust syntax only used to have syntax highlighting)* that are used to interface different components of the Holochain based Junto back-end with its UI.
 
 The main intention behind defining traits as abstract interfaces and hence introducing a contract that the UI can follow without being coupled to the implemention of those traits is clearly to decouple zome code and UI code such that the Junto Holochain back-end can be implemented by several micro-service DNAs with clear concerns and which can be exchanged or extended by 3rd party DNAs later on.
