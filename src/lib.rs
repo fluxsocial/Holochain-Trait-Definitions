@@ -143,7 +143,7 @@ pub trait ExpressionDao {
 
 /// Interface for cross DNA links. Allows for the discovery of new DNA's/entries from a known source DNA/entry.
 /// Host DNA should most likely implement strong anti spam logic if this is to be a public - unmembraned DNA.
-pub trait InterDNALinkDao {
+pub trait InterDNADao {
     fn create_link(source: GlobalEntryRef, target: GlobalEntryRef) -> ZomeApiResult<()>;
     fn remove_link(source: GlobalEntryRef, target: GlobalEntryRef) -> ZomeApiResult<()>;
 

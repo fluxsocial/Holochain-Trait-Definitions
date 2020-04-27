@@ -163,7 +163,7 @@ struct GlobalEntryRef {
 
 /// Interface for cross DNA links. Allows for the discovery of new DNA's/entries from a known source DNA/entry.
 /// Host DNA should most likely implement strong anti spam logic if this is to be a public - unmembraned DNA.
-trait InterDNALink {
+trait InterDNA {
     fn create_link(source: GlobalEntryRef, target: GlobalEntryRef);
     fn remove_link(source: GlobalEntryRef, target: GlobalEntryRef);
 
