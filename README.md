@@ -152,7 +152,7 @@ trait Expression {
 }
 ```
 
-## Inter-DNA-Link-DNAs
+## Inter-DNA
 
 ```rust
 /// Entry marking a reference to some other entry in another DNA
