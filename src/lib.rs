@@ -147,6 +147,6 @@ pub trait InterDNADao {
     fn create_link(source: GlobalEntryRef, target: GlobalEntryRef) -> ZomeApiResult<()>;
     fn remove_link(source: GlobalEntryRef, target: GlobalEntryRef) -> ZomeApiResult<()>;
 
-    fn get_outgoing(source: GlobalEntryRef) -> ZomeApiResult<Vec<GlobalEntryRef>>;
-    fn get_incoming(target: GlobalEntryRef) -> ZomeApiResult<Vec<GlobalEntryRef>>;
+    fn get_outgoing(source: GlobalEntryRef, count: usize, page: usize) -> ZomeApiResult<Vec<GlobalEntryRef>>;
+    fn get_incoming(target: GlobalEntryRef, count: usize, page: usize) -> ZomeApiResult<Vec<GlobalEntryRef>>;
 }
