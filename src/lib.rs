@@ -96,18 +96,18 @@ pub trait SocialContextDao {
     fn post(expression_ref: GlobalEntryRef) -> ZomeApiResult<()>;
     /// Register that there is some dna at dna_address that you are communicating in.
     /// Others in collective can use this to join you in new DNA's
-    fn register_comment_link_dna(dna_address: Address) -> ZomeApiResult<()>;
+    fn register_communication_method(dna_address: Address) -> ZomeApiResult<()>;
     /// Is current agent allowed to write to this DNA
     fn writable() -> bool;
     /// Get GlobalEntryRef for collective; queryable by dna or agent or all. DHT hotspotting @Nico?
-    fn read_links(
+    fn read_communications(
         by_dna: Option<Address>,
         by_agent: Option<Identity>,
         count: usize,
         page: usize,
-    ) -> ZomeApiResult<GlobalEntryRef>;
+    ) -> ZomeApiResult<Vec<GlobalEntryRef>>;
     /// Get DNA's this social context is communicating in
-    fn get_comment_link_dnas(count: usize, page: usize) -> ZomeApiResult<GlobalEntryRef>;
+    fn get_communication_methods(count: usize, page: usize) -> ZomeApiResult<Vec<Address>>;
     /// Get agents who are a part of this social context
     /// optional to not force every implementation to create a global list of members - might be ok for small DHTs
     fn members(count: usize, page: usize) -> ZomeApiResult<Option<Vec<Identity>>>;
