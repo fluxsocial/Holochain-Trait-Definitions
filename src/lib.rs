@@ -11,7 +11,7 @@ use hdk::{
     holochain_persistence_api::cas::content::Address,
 };
 
-type Identity = Address;
+pub type Identity = Address;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct GlobalEntryRef {
@@ -64,8 +64,8 @@ pub trait SocialGraphDao {
     fn my_friends() -> ZomeApiResult<Vec<Identity>>;
     fn friends_of(agent: Identity) -> ZomeApiResult<Vec<Identity>>;
 
-    fn request_friendship(other_agent: Identity);
-    fn decline_friendship(other_agent: Identity);
+    fn request_friendship(other_agent: Identity) -> ZomeApiResult<()>;
+    fn decline_friendship(other_agent: Identity) -> ZomeApiResult<()>;
 
     fn incoming_friendship_requests() -> ZomeApiResult<Vec<Identity>>;
     fn outgoing_friendship_requests() -> ZomeApiResult<Vec<Identity>>;
