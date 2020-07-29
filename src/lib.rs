@@ -11,7 +11,7 @@ use hdk::{
     holochain_persistence_api::cas::content::Address,
 };
 
-type Identity = Address;
+pub type Identity = Address;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 pub struct GlobalEntryRef {
@@ -57,20 +57,20 @@ pub trait SocialGraphDao {
         by: Option<String>,
     ) -> ZomeApiResult<Vec<Identity>>;
 
-    fn follow(other_agent: Identity, by: Option<String>) -> ZomeApiResult<()>;
-    fn unfollow(other_agent: Identity, by: Option<String>) -> ZomeApiResult<()>;
+    fn follow(target_agent: Identity, by: Option<String>) -> ZomeApiResult<()>;
+    fn unfollow(target_agent: Identity, by: Option<String>) -> ZomeApiResult<()>;
 
     // Connection Related Operations (i.e. bidirectional friendship)
     fn my_friends() -> ZomeApiResult<Vec<Identity>>;
     fn friends_of(agent: Identity) -> ZomeApiResult<Vec<Identity>>;
 
-    fn request_friendship(other_agent: Identity);
-    fn decline_friendship(other_agent: Identity);
+    fn request_friendship(target_agent: Identity) -> ZomeApiResult<()>;
+    fn decline_friendship(target_agent: Identity) -> ZomeApiResult<()>;
 
     fn incoming_friendship_requests() -> ZomeApiResult<Vec<Identity>>;
     fn outgoing_friendship_requests() -> ZomeApiResult<Vec<Identity>>;
 
-    fn drop_friendship(other_agent: Identity) -> ZomeApiResult<()>;
+    fn drop_friendship(target_agent: Identity) -> ZomeApiResult<()>;
 }
 
 /// Trait that provides an interface for associating entries in foreign DNA's to a social context/collective.
