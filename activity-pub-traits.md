@@ -14,9 +14,14 @@ pub enum Method {
 /// Describes a DNA method 
 pub struct DnaMethod {
     dna: Address,
-    resource: Option<String> //eg get_by_address
-    method: Method
-    params: Option<JsonString>
+    resource: Option<String>, //eg get_by_address
+    method: Method,
+    params: Option<hdk::prelude::JsonString> // Params for function
+}
+
+pub struct MethodPair {
+    post: Option<DnaMethod>,
+    get: Option<DnaMethod>
 }
 
 pub struct ApActor<T: activitystreams::Actor, CT: activitystreams::Collection> {
@@ -25,16 +30,16 @@ pub struct ApActor<T: activitystreams::Actor, CT: activitystreams::Collection> {
     //Likely that all DNA methods below would point to social contexts
     //References to public DNA's
     //Since auth is not possible on DNA's and instead they are protected by membrane rules; we need different DNA's for different privacy levels
-    inbox_pub: Option<DnaMethod>, //Post @ social context
-    outbox_pub: Option<DnaMethod>, //Post @ social context 
-    followers_pub: Option<DnaMethod>, //Read links @ social context with by_agent = id
-    following_pub: Option<DnaMethod>, //Read links @ social context with by_agent = id
+    inbox_pub: Option<MethodPair>, //Likely a social context w/ resources for post'ing there and getting actors post there
+    outbox_pub: Option<MethodPair>, //Likely a social context w/ resources for post'ing there and getting actors post there
+    followers_pub: Option<MethodPair>, //Likely a social graph w/ methods for getting followers and creating new follow
+    following_pub: Option<MethodPair>, //Likely a social graph w/ methods for getting followers and creating new follow
     collections_public: CT, //Various collections of expressions/social contexts
     //References to private DNA's
-    inbox_private: Option<DnaMethod>, //Post @ social context
-    outbox_private: Option<DnaMethod>, //Post @ social context
-    followers_private: Option<DnaMethod>, //Read links @ social context with by_agent = id
-    following_private: Option<DnaMethod>, //Read links @ social context with by_agent = id
+    inbox_private: Option<MethodPair>, //Likely a social context w/ resources for post'ing there and getting actors post there
+    outbox_private: Option<MethodPair>, //Likely a social context w/ resources for post'ing there and getting actors post there
+    followers_private: Option<MethodPair>, //Likely a social graph w/ methods for getting followers and creating new follow
+    following_private: Option<MethodPair>, //Likely a social graph w/ methods for getting followers and creating new follow
     collections_private: CT //Various collections of expressions/social contexts
 }
 
@@ -55,26 +60,26 @@ type Identity = DpkiRootHash;
 trait SocialGraph {
     // Follow Related Operations
     // Inner values for collections here likely Object of type relationship
-    fn my_followers(relationship: Option<String>) -> activitystreams::Collection;
-    fn followers(followed_agent: activitystreams::actor::Actor, relationship: Option<String>) -> activitystreams::Collection;
-    fn nth_level_followers(n: uint, followed_agent: activitystreams::actor::Actor, relationship: Option<String>) -> activitystreams::Collection;
+    fn my_followers(relationship: Option<String>) -> activitystreams::OrderedCollection;
+    fn followers(followed_agent: activitystreams::actor::Actor, relationship: Option<String>) -> activitystreams::OrderedCollection;
+    fn nth_level_followers(n: uint, followed_agent: activitystreams::actor::Actor, relationship: Option<String>) -> activitystreams::OrderedCollection;
 
-    fn my_followings(relationship: Option<String>) -> activitystreams::Collection;
-    fn following(following_agent: activitystreams::actor::Actor, relationship: Option<String>) -> activitystreams::Collection;
-    fn nth_level_following(n: uint, following_agent: activitystreams::actor::Actor, relationship: Option<String>) -> activitystreams::Collection;
+    fn my_followings(relationship: Option<String>) -> activitystreams::OrderedCollection;
+    fn following(following_agent: activitystreams::actor::Actor, relationship: Option<String>) -> activitystreams::OrderedCollection;
+    fn nth_level_following(n: uint, following_agent: activitystreams::actor::Actor, relationship: Option<String>) -> activitystreams::OrderedCollection;
 
     fn follow(other_agent: activitystreams::actor::Actor, relationship: Option<String>) -> Result<(), ZomeApiError>;
     fn unfollow(other_agent: activitystreams::actor::Actor, relationship: Option<String>) -> Result<(), ZomeApiError>;
 
     // Connection Related Operations (i.e. bidirectional friendship)
-    fn my_friends() -> activitystreams::Collection;
-    fn friends_of(agent: activitystreams::actor::Actor) -> activitystreams::Collection;
+    fn my_friends() -> activitystreams::OrderedCollection;
+    fn friends_of(agent: activitystreams::actor::Actor) -> activitystreams::OrderedCollection;
 
     fn request_friendship(other_agent: activitystreams::actor::Actor);
     fn decline_friendship(other_agent: activitystreams::actor::Actor);
 
-    fn incoming_friendship_requests() -> activitystreams::Collection;
-    fn outgoing_friendship_requests() -> activitystreams::Collection;
+    fn incoming_friendship_requests() -> activitystreams::OrderedCollection;
+    fn outgoing_friendship_requests() -> activitystreams::OrderedCollection;
 
     fn drop_friendship(other_agent: activitystreams::actor::Actor) -> Result<(), ZomeApiError>;
 }
