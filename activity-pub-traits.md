@@ -3,6 +3,8 @@
 ## Profile Trait
 
 ```rust
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum Method {
     Post,
     Get,
@@ -11,6 +13,8 @@ pub enum Method {
 }
 
 /// Describes a DNA method 
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DnaMethod {
     pub dna: Address,
     pub resource: Option<String>, //eg get_by_address
@@ -18,36 +22,58 @@ pub struct DnaMethod {
     pub params: Option<JsonString> // Params for function
 }
 
+//Used to represent methods for a given "resource"
+//needed since holochain does not support multiple HTTP methods to one endpoint; just supports POST to every endpoint
+//alternative for this is having some string encoded representation such as
+//dna-address;resource-get;method;params\dna-address;resource-post;method;params
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MethodPair {
     pub post: Option<DnaMethod>,
     pub get: Option<DnaMethod>
 }
 
-pub struct ApActor {
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ApActor<Kind, CK> {
     pub context: String, //Likely need to define our own context that extends from Activity Streams to incorporate pub/private resources
-    pub actor: Box<dyn activitystreams::actor::AsApActor<dyn activitystreams::markers::Actor>>,
-    //Likely that all DNA methods below would point to social contexts
-    //References to public DNA's
+    #[serde(flatten)]
+    pub inner: Kind,
+    pub prefered_username: String,
     //Since auth is not possible on DNA's and instead they are protected by membrane rules; we need different DNA's for different privacy levels
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub inbox_pub: Option<MethodPair>, //Likely a social context w/ resources for post'ing there and getting actors post there
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub outbox_pub: Option<MethodPair>, //Likely a social context w/ resources for post'ing there and getting actors post there
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub followers_pub: Option<MethodPair>, //Likely a social graph w/ methods for getting followers and creating new follow
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub following_pub: Option<MethodPair>, //Likely a social graph w/ methods for getting followers and creating new follow
-    pub collections_public: Box<dyn activitystreams::markers::Collection>, //Various collections of expressions/social contexts
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub likes_pub: Option<MethodPair>,
+    pub streams_pub: activitystreams::collection::Collection<CK>, //Various collections of expressions/social contexts
     //References to private DNA's
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub inbox_private: Option<MethodPair>, //Likely a social context w/ resources for post'ing there and getting actors post there
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub outbox_private: Option<MethodPair>, //Likely a social context w/ resources for post'ing there and getting actors post there
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub followers_private: Option<MethodPair>, //Likely a social graph w/ methods for getting followers and creating new follow
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub following_private: Option<MethodPair>, //Likely a social graph w/ methods for getting followers and creating new follow
-    pub collections_private: Box<dyn activitystreams::markers::Collection> //Various collections of expressions/social contexts
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub likes_private: Option<MethodPair>,
+    pub streams_private: activitystreams::collection::Collection<CK> //Various collections of expressions/social contexts
 }
 
-pub trait APProfile {
-    fn create_profile(actor_data: ApActor) -> ZomeApiResult<ApActor>;
-    fn get_profile(target: Address) -> ZomeApiResult<Option<ApActor>>;
-    fn update_profile(actor_data: ApActor) -> ZomeApiResult<ApActor>;
+#[automock]
+pub trait APProfile<Kind: 'static, CK: 'static> {
+    fn create_profile(actor_data: ApActor<Kind, CK>) -> ZomeApiResult<ApActor<Kind, CK>>;
+    fn get_profile(target: Address) -> ZomeApiResult<Option<ApActor<Kind, CK>>>;
+    fn update_profile(actor_data: ApActor<Kind, CK>) -> ZomeApiResult<ApActor<Kind, CK>>;
     fn delete_profile() -> ZomeApiResult<()>;
 }
+
 ```
 
 ## Social Graph

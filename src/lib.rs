@@ -12,6 +12,7 @@ use hdk::{
 };
 
 pub mod activity_pub_ext;
+pub mod mocks;
 
 pub type Identity = Address;
 
