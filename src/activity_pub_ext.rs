@@ -22,6 +22,10 @@ pub struct DnaMethod {
     pub params: Option<JsonString> // Params for function
 }
 
+//Used to represent methods for a given "resource"
+//needed since holochain does not support multiple HTTP methods to one endpoint; just supports POST to every endpoint
+//alternative for this is having some string encoded representation such as
+//dna-address;resource-get;method;params\dna-address;resource-post;method;params
 pub struct MethodPair {
     pub post: Option<DnaMethod>,
     pub get: Option<DnaMethod>
@@ -29,7 +33,7 @@ pub struct MethodPair {
 
 pub struct ApActor {
     pub context: String, //Likely need to define our own context that extends from Activity Streams to incorporate pub/private resources
-    pub actor: Box<dyn activitystreams::markers::Actor>,
+    pub actor: Box<dyn activitystreams::actor::AsApActor<dyn activitystreams::markers::Actor>>,
     //Likely that all DNA methods below would point to social contexts
     //References to public DNA's
     //Since auth is not possible on DNA's and instead they are protected by membrane rules; we need different DNA's for different privacy levels
@@ -57,27 +61,27 @@ pub trait SocialGraph {
     // Follow Related Operations
     // Inner values for collections here likely Object of type relationship
     fn my_followers(relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
-    fn followers(followed_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
-    fn nth_level_followers(n: u32, followed_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
+    fn followers(followed_agent: Address, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
+    fn nth_level_followers(n: u32, followed_agent: Address, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
 
     fn my_followings(relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
-    fn following(following_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
-    fn nth_level_following(n: u32, following_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
+    fn following(following_agent: Address, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
+    fn nth_level_following(n: u32, following_agent: Address, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
 
-    fn follow(other_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> Result<(), ZomeApiError>;
-    fn unfollow(other_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> Result<(), ZomeApiError>;
+    fn follow(other_agent: Address, relationship: Option<String>) -> Result<(), ZomeApiError>;
+    fn unfollow(other_agent: Address, relationship: Option<String>) -> Result<(), ZomeApiError>;
 
     // Connection Related Operations (i.e. bidirectional friendship)
     fn my_friends() -> activitystreams::collection::OrderedCollection;
-    fn friends_of(agent: dyn activitystreams::markers::Actor) -> activitystreams::collection::OrderedCollection;
+    fn friends_of(agent: Address) -> activitystreams::collection::OrderedCollection;
 
-    fn request_friendship(other_agent: dyn activitystreams::markers::Actor);
-    fn decline_friendship(other_agent: dyn activitystreams::markers::Actor);
+    fn request_friendship(other_agent: Address);
+    fn decline_friendship(other_agent: Address);
 
     fn incoming_friendship_requests() -> activitystreams::collection::OrderedCollection;
     fn outgoing_friendship_requests() -> activitystreams::collection::OrderedCollection;
 
-    fn drop_friendship(other_agent: dyn activitystreams::markers::Actor) -> Result<(), ZomeApiError>;
+    fn drop_friendship(other_agent: Address) -> Result<(), ZomeApiError>;
 }
 
 /// A holochain expression
@@ -86,12 +90,6 @@ pub struct HolochainExpression {
     pub headers: Vec<ChainHeader>,
     pub expression_dna: Address,
     pub activity_streams_entry: Box<dyn activitystreams::markers::Object>,
-    // @Nico - newly added in the case that (potential additions) below are not added. This provides a way for user
-    // to specify a given Inter-DNA-Link-DNA they would like people to use for comments.
-    // Nico: I wonder if we really need this - even without the addtions below.
-    // Since we have `SocialContext` as defined above I don't think
-    // we need below "potential addittions" add all.
-    // This might be nice-to-have.
     pub inter_dna_link_dna: Option<Address>,
 }
 
@@ -118,9 +116,13 @@ pub trait Expression {
 /// Interface for cross DNA links. Allows for the discovery of new DNA's/entries from a known source DNA/entry.
 /// Host DNA should most likely implement strong anti spam logic if this is to be a public - unmembraned DNA.
 pub trait InterDNA {
-    fn create_link(source: GlobalEntryRef, target: GlobalEntryRef) -> dyn activitystreams::markers::Object;
-    fn remove_link(source: GlobalEntryRef, target: GlobalEntryRef) -> dyn activitystreams::markers::Object;
+    fn create_link(source: GlobalEntryRef, target: GlobalEntryRef) -> Box<dyn activitystreams::markers::Object>;
+    fn remove_link(source: GlobalEntryRef, target: GlobalEntryRef) -> Box<dyn activitystreams::markers::Object>;
 
-    fn get_outgoing(source: GlobalEntryRef, filter_dna: Address) -> activitystreams::collection::OrderedCollection; //Relationship
-    fn get_incoming(target: GlobalEntryRef, filter_dna: Address) -> activitystreams::collection::OrderedCollection; //Relationship
+    fn get_outgoing(source: GlobalEntryRef, filter_dna: Address) -> activitystreams::collection::OrderedCollection;
+    fn get_incoming(target: GlobalEntryRef, filter_dna: Address) -> activitystreams::collection::OrderedCollection;
 }
+
+
+//Note holochain zome handlers will need to parse incoming json and serialize into types that implement required traits 
+//for traits above

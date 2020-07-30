@@ -25,7 +25,7 @@ pub struct MethodPair {
 
 pub struct ApActor {
     pub context: String, //Likely need to define our own context that extends from Activity Streams to incorporate pub/private resources
-    pub actor: Box<dyn activitystreams::markers::Actor>,
+    pub actor: Box<dyn activitystreams::actor::AsApActor<dyn activitystreams::markers::Actor>>,
     //Likely that all DNA methods below would point to social contexts
     //References to public DNA's
     //Since auth is not possible on DNA's and instead they are protected by membrane rules; we need different DNA's for different privacy levels
@@ -57,27 +57,27 @@ pub trait SocialGraph {
     // Follow Related Operations
     // Inner values for collections here likely Object of type relationship
     fn my_followers(relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
-    fn followers(followed_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
-    fn nth_level_followers(n: u32, followed_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
+    fn followers(followed_agent: Address, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
+    fn nth_level_followers(n: u32, followed_agent: Address, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
 
     fn my_followings(relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
-    fn following(following_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
-    fn nth_level_following(n: u32, following_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
+    fn following(following_agent: Address, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
+    fn nth_level_following(n: u32, following_agent: Address, relationship: Option<String>) -> activitystreams::collection::OrderedCollection;
 
-    fn follow(other_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> Result<(), ZomeApiError>;
-    fn unfollow(other_agent: dyn activitystreams::markers::Actor, relationship: Option<String>) -> Result<(), ZomeApiError>;
+    fn follow(other_agent: Address, relationship: Option<String>) -> Result<(), ZomeApiError>;
+    fn unfollow(other_agent: Address, relationship: Option<String>) -> Result<(), ZomeApiError>;
 
     // Connection Related Operations (i.e. bidirectional friendship)
     fn my_friends() -> activitystreams::collection::OrderedCollection;
-    fn friends_of(agent: dyn activitystreams::markers::Actor) -> activitystreams::collection::OrderedCollection;
+    fn friends_of(agent: Address) -> activitystreams::collection::OrderedCollection;
 
-    fn request_friendship(other_agent: dyn activitystreams::markers::Actor);
-    fn decline_friendship(other_agent: dyn activitystreams::markers::Actor);
+    fn request_friendship(other_agent: Address);
+    fn decline_friendship(other_agent: Address);
 
     fn incoming_friendship_requests() -> activitystreams::collection::OrderedCollection;
     fn outgoing_friendship_requests() -> activitystreams::collection::OrderedCollection;
 
-    fn drop_friendship(other_agent: dyn activitystreams::markers::Actor) -> Result<(), ZomeApiError>;
+    fn drop_friendship(other_agent: Address) -> Result<(), ZomeApiError>;
 }
 
 ```
