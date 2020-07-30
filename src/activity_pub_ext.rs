@@ -1,8 +1,12 @@
-# Activity Pub x Junto Holochain Traits
+use hdk::holochain_json_api::json::JsonString;
+use hdk::{
+    error::{ZomeApiResult, ZomeApiError},
+    holochain_core_types::{chain_header::ChainHeader, entry::Entry},
+    holochain_persistence_api::cas::content::Address,
+};
 
-## Profile Trait
+use crate::GlobalEntryRef;
 
-```rust
 pub enum Method {
     Post,
     Get,
@@ -48,11 +52,7 @@ pub trait APProfile {
     fn update_profile(actor_data: ApActor) -> ZomeApiResult<ApActor>;
     fn delete_profile() -> ZomeApiResult<()>;
 }
-```
 
-## Social Graph
-
-```rust
 pub trait SocialGraph {
     // Follow Related Operations
     // Inner values for collections here likely Object of type relationship
@@ -80,11 +80,6 @@ pub trait SocialGraph {
     fn drop_friendship(other_agent: dyn activitystreams::markers::Actor) -> Result<(), ZomeApiError>;
 }
 
-```
-
-## Expression Trait
-
-```rust
 /// A holochain expression
 pub struct HolochainExpression {
     pub entry: Entry,
@@ -119,17 +114,6 @@ pub trait Expression {
     /// Get private expressions sent to you
     fn inbox() -> Vec<HolochainExpression>;
 }
-```
-
-
-## Inter-DNA
-
-```rust
-/// Entry marking a reference to some other entry in another DNA
-struct GlobalEntryRef {
-    dna_address: Address,
-    entry_address: Address,
-}
 
 /// Interface for cross DNA links. Allows for the discovery of new DNA's/entries from a known source DNA/entry.
 /// Host DNA should most likely implement strong anti spam logic if this is to be a public - unmembraned DNA.
@@ -140,5 +124,3 @@ pub trait InterDNA {
     fn get_outgoing(source: GlobalEntryRef, filter_dna: Address) -> activitystreams::collection::OrderedCollection; //Relationship
     fn get_incoming(target: GlobalEntryRef, filter_dna: Address) -> activitystreams::collection::OrderedCollection; //Relationship
 }
-
-```
