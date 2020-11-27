@@ -11,9 +11,6 @@ use hdk::{
     holochain_persistence_api::cas::content::Address,
 };
 
-pub mod activity_pub_ext;
-pub mod mocks;
-
 pub type Identity = Address;
 
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
