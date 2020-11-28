@@ -7,10 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = "1.0"
-serde_json = { version = "1.0", features = ["preserve_order"] }
-serde_derive = "1.0"
-hdk = "=0.0.47-alpha1"
-holochain_wasm_utils = "=0.0.47-alpha1"
-holochain_json_derive = "0.0"
-hdk_proc_macros = "=0.0.47-alpha1"
+serde = "1"
+serde_json = "1"
+serde_derive = "1"
+hdk3 = { git = "https://github.com/holochain/holochain", rev="60292d", package = "hdk3" }
+holo_hash = { git = "https://github.com/holochain/holochain", rev = "7037aa2ccfb1ad9a8ece98eb379686f605dc1a0c", package = "holo_hash" }

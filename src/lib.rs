@@ -1,30 +1,20 @@
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-#[macro_use]
-extern crate holochain_json_derive;
+use hdk3::prelude::*;
+use holo_hash::HoloHash;
+use holo_hash::hash_type::Dna;
 
-use hdk::holochain_json_api::{error::JsonError, json::JsonString};
-use hdk::{
-    error::ZomeApiResult,
-    holochain_core_types::{chain_header::ChainHeader, entry::Entry},
-    holochain_persistence_api::cas::content::Address,
-};
+pub type Identity = AgentPubKey;
 
-pub type Identity = Address;
-
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct GlobalEntryRef {
-    pub dna_address: Address,
-    pub entry_address: Address,
+    pub dna: HoloHash<Dna>,
+    pub entry_address: HoloHash<Header>,
 }
 
 /// A holochain expression
-#[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Expression {
-    pub entry: Entry,
-    pub headers: Vec<ChainHeader>,
-    pub expression_dna: Address,
+    pub expression: Element,
+    pub expression_dna: HoloHash<Dna>,
 }
 
 /// Trait that provides an interface for creating and maintaining a social graph
@@ -41,36 +31,36 @@ pub struct Expression {
 /// for each social graph context the user wants to define.
 pub trait SocialGraphDao {
     // Follow Related Operations
-    fn my_followers(by: Option<String>) -> ZomeApiResult<Vec<Identity>>;
-    fn followers(followed_agent: Identity, by: Option<String>) -> ZomeApiResult<Vec<Identity>>;
+    fn my_followers(by: Option<String>) -> ExternResult<Vec<Identity>>;
+    fn followers(followed_agent: Identity, by: Option<String>) -> ExternResult<Vec<Identity>>;
     fn nth_level_followers(
         n: usize,
         followed_agent: Identity,
         by: Option<String>,
-    ) -> ZomeApiResult<Vec<Identity>>;
+    ) -> ExternResult<Vec<Identity>>;
 
-    fn my_followings(by: Option<String>) -> ZomeApiResult<Vec<Identity>>;
-    fn following(following_agent: Identity, by: Option<String>) -> ZomeApiResult<Vec<Identity>>;
+    fn my_followings(by: Option<String>) -> ExternResult<Vec<Identity>>;
+    fn following(following_agent: Identity, by: Option<String>) -> ExternResult<Vec<Identity>>;
     fn nth_level_following(
         n: usize,
         following_agent: Identity,
         by: Option<String>,
-    ) -> ZomeApiResult<Vec<Identity>>;
+    ) -> ExternResult<Vec<Identity>>;
 
-    fn follow(target_agent: Identity, by: Option<String>) -> ZomeApiResult<()>;
-    fn unfollow(target_agent: Identity, by: Option<String>) -> ZomeApiResult<()>;
+    fn follow(target_agent: Identity, by: Option<String>) -> ExternResult<()>;
+    fn unfollow(target_agent: Identity, by: Option<String>) -> ExternResult<()>;
 
     // Connection Related Operations (i.e. bidirectional friendship)
-    fn my_friends() -> ZomeApiResult<Vec<Identity>>;
-    fn friends_of(agent: Identity) -> ZomeApiResult<Vec<Identity>>;
+    fn my_friends() -> ExternResult<Vec<Identity>>;
+    fn friends_of(agent: Identity) -> ExternResult<Vec<Identity>>;
 
-    fn request_friendship(target_agent: Identity) -> ZomeApiResult<()>;
-    fn decline_friendship(target_agent: Identity) -> ZomeApiResult<()>;
+    fn request_friendship(target_agent: Identity) -> ExternResult<()>;
+    fn decline_friendship(target_agent: Identity) -> ExternResult<()>;
 
-    fn incoming_friendship_requests() -> ZomeApiResult<Vec<Identity>>;
-    fn outgoing_friendship_requests() -> ZomeApiResult<Vec<Identity>>;
+    fn incoming_friendship_requests() -> ExternResult<Vec<Identity>>;
+    fn outgoing_friendship_requests() -> ExternResult<Vec<Identity>>;
 
-    fn drop_friendship(target_agent: Identity) -> ZomeApiResult<()>;
+    fn drop_friendship(target_agent: Identity) -> ExternResult<()>;
 }
 
 /// Trait that provides an interface for associating entries in foreign DNA's to a social context/collective.
@@ -93,24 +83,24 @@ pub trait SocialGraphDao {
 pub trait SocialContextDao {
     /// Persist to social context that you have made an entry at expression_ref.dna_address/@expression_ref.entry_address
     /// which is most likely contextual to the collective of host social context
-    fn post(expression_ref: GlobalEntryRef) -> ZomeApiResult<()>;
+    fn post(expression_ref: GlobalEntryRef) -> ExternResult<()>;
     /// Register that there is some dna at dna_address that you are communicating in.
     /// Others in collective can use this to join you in new DNA's
-    fn register_communication_method(dna_address: Address) -> ZomeApiResult<()>;
+    fn register_communication_method(dna_address: HoloHash<Dna>) -> ExternResult<()>;
     /// Is current agent allowed to write to this DNA
     fn writable() -> bool;
     /// Get GlobalEntryRef for collective; queryable by dna or agent or all. DHT hotspotting @Nico?
     fn read_communications(
-        by_dna: Option<Address>,
+        by_dna: Option<HoloHash<Dna>>,
         by_agent: Option<Identity>,
         count: usize,
         page: usize,
-    ) -> ZomeApiResult<Vec<GlobalEntryRef>>;
+    ) -> ExternResult<Vec<GlobalEntryRef>>;
     /// Get DNA's this social context is communicating in
-    fn get_communication_methods(count: usize, page: usize) -> ZomeApiResult<Vec<Address>>;
+    fn get_communication_methods(count: usize, page: usize) -> ExternResult<Vec<HoloHash<Dna>>>;
     /// Get agents who are a part of this social context
     /// optional to not force every implementation to create a global list of members - might be ok for small DHTs
-    fn members(count: usize, page: usize) -> ZomeApiResult<Option<Vec<Identity>>>;
+    fn members(count: usize, page: usize) -> ExternResult<Option<Vec<Identity>>>;
 }
 
 /// An interface into a DNA which contains Expression information. Expected to be interacted with using expression Addresses
@@ -122,31 +112,31 @@ pub trait SocialContextDao {
 pub trait ExpressionDao {
     /// Create an expression and link it to yourself publicly with optional dna_address pointing to
     /// dna that should ideally be used for linking any comments to this expression
-    fn create_public_expression(content: String) -> ZomeApiResult<Expression>;
+    fn create_public_expression(content: String) -> ExternResult<Expression>;
     /// Get expressions authored by a given Agent/Identity
     fn get_by_author(
         author: Identity,
         page_size: usize,
         page_number: usize,
-    ) -> ZomeApiResult<Vec<Expression>>;
-    fn get_expression_by_address(address: Address) -> ZomeApiResult<Option<Expression>>;
+    ) -> ExternResult<Vec<Expression>>;
+    fn get_expression_by_address(address: AnyDhtHash) -> ExternResult<Option<Expression>>;
 
     /// Send an expression to someone privately p2p
-    fn send_private(to: Address, content: String) -> ZomeApiResult<String>;
+    fn send_private(to: Identity, content: String) -> ExternResult<String>;
     /// Get private expressions sent to you optionally filtered by sender address
     fn inbox(
         from: Option<Identity>,
         page_size: usize,
         page_number: usize,
-    ) -> ZomeApiResult<Vec<Expression>>;
+    ) -> ExternResult<Vec<Expression>>;
 }
 
 /// Interface for cross DNA links. Allows for the discovery of new DNA's/entries from a known source DNA/entry.
 /// Host DNA should most likely implement strong anti spam logic if this is to be a public - unmembraned DNA.
 pub trait InterDNADao {
-    fn create_link(source: GlobalEntryRef, target: GlobalEntryRef) -> ZomeApiResult<()>;
-    fn remove_link(source: GlobalEntryRef, target: GlobalEntryRef) -> ZomeApiResult<()>;
+    fn create_link(source: GlobalEntryRef, target: GlobalEntryRef) -> ExternResult<()>;
+    fn remove_link(source: GlobalEntryRef, target: GlobalEntryRef) -> ExternResult<()>;
 
-    fn get_outgoing(source: GlobalEntryRef, count: usize, page: usize) -> ZomeApiResult<Vec<GlobalEntryRef>>;
-    fn get_incoming(target: GlobalEntryRef, count: usize, page: usize) -> ZomeApiResult<Vec<GlobalEntryRef>>;
+    fn get_outgoing(source: GlobalEntryRef, count: usize, page: usize) -> ExternResult<Vec<GlobalEntryRef>>;
+    fn get_incoming(target: GlobalEntryRef, count: usize, page: usize) -> ExternResult<Vec<GlobalEntryRef>>;
 }
