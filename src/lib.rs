@@ -1,20 +1,19 @@
 use hdk3::prelude::*;
-use holo_hash::HoloHash;
-use holo_hash::hash_type::Dna;
+use holo_hash::DnaHash;
 
 pub type Identity = AgentPubKey;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, SerializedBytes)]
 pub struct GlobalEntryRef {
-    pub dna: HoloHash<Dna>,
-    pub entry_address: HoloHash<Header>,
+    pub dna: DnaHash,
+    pub entry_address: HeaderHash,
 }
 
 /// A holochain expression
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, SerializedBytes)]
 pub struct Expression {
     pub expression: Element,
-    pub expression_dna: HoloHash<Dna>,
+    pub expression_dna: DnaHash,
 }
 
 /// Trait that provides an interface for creating and maintaining a social graph
@@ -86,18 +85,18 @@ pub trait SocialContextDao {
     fn post(expression_ref: GlobalEntryRef) -> ExternResult<()>;
     /// Register that there is some dna at dna_address that you are communicating in.
     /// Others in collective can use this to join you in new DNA's
-    fn register_communication_method(dna_address: HoloHash<Dna>) -> ExternResult<()>;
+    fn register_communication_method(dna_address: DnaHash) -> ExternResult<()>;
     /// Is current agent allowed to write to this DNA
     fn writable() -> bool;
     /// Get GlobalEntryRef for collective; queryable by dna or agent or all. DHT hotspotting @Nico?
     fn read_communications(
-        by_dna: Option<HoloHash<Dna>>,
+        by_dna: Option<DnaHash>,
         by_agent: Option<Identity>,
         count: usize,
         page: usize,
     ) -> ExternResult<Vec<GlobalEntryRef>>;
     /// Get DNA's this social context is communicating in
-    fn get_communication_methods(count: usize, page: usize) -> ExternResult<Vec<HoloHash<Dna>>>;
+    fn get_communication_methods(count: usize, page: usize) -> ExternResult<Vec<DnaHash>>;
     /// Get agents who are a part of this social context
     /// optional to not force every implementation to create a global list of members - might be ok for small DHTs
     fn members(count: usize, page: usize) -> ExternResult<Option<Vec<Identity>>>;
