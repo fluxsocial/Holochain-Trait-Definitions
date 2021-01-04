@@ -9,11 +9,20 @@ pub struct GlobalEntryRef {
     pub entry_address: HeaderHash,
 }
 
+#[derive(Serialize, Deserialize, Clone, SerializedBytes)]
+pub struct GlobalEntryRefChunked {
+    pub dna: DnaHash,
+    pub entry_address: HeaderHash,
+    pub chunk: u32
+}
+
 /// A holochain expression
 #[derive(Serialize, Deserialize, Debug, Clone, SerializedBytes)]
 pub struct Expression {
     pub expression: Element,
     pub expression_dna: DnaHash,
+    pub creator: AgentPubKey,
+    pub created_at: chrono::DateTime<chrono::Utc>
 }
 
 /// Trait that provides an interface for creating and maintaining a social graph

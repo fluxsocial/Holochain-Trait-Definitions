@@ -10,5 +10,6 @@ edition = "2018"
 serde = "1"
 serde_json = "1"
 serde_derive = "1"
-hdk3 = { git = "https://github.com/holochain/holochain", branch = "develop", package = "hdk3" }
-holo_hash = { git = "https://github.com/holochain/holochain", branch = "develop", package = "holo_hash" }
+hdk3 = { git = "https://github.com/holochain/holochain", rev = "3675b58", package = "hdk3" }
+holo_hash = { git = "https://github.com/holochain/holochain", rev = "3675b58", package = "holo_hash" }
+chrono = { version = "*", features = ["serde"] }
